@@ -42,6 +42,7 @@
     <Compile Include="..\Source\Game1.cs">
       <Link>Game1.cs</Link>
     </Compile>
+    <Compile Include="KinectTexture2D.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

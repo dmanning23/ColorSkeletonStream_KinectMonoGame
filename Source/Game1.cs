@@ -23,6 +23,8 @@ namespace ColorSkeletonStream_KinectMonoGame
 		private const int ScreenX = 1024;
 		private const int ScreenY = 768;
 
+		KinectTexture2D Tex;
+
 		#endregion //MonoGame
 
 		#region Kinect
@@ -47,16 +49,6 @@ namespace ColorSkeletonStream_KinectMonoGame
 		/// Intermediate storage for the depth data converted to color
 		/// </summary>
 		private byte[] colorPixels;
-
-		/// <summary>
-		/// the texture to write to
-		/// </summary>
-		Texture2D pixels;
-
-		/// <summary>
-		/// temp buffer to hold convert kinect data to color objects
-		/// </summary>
-		Color[] pixelData_clear;
 
 		#endregion //Color Tracking
 
@@ -85,12 +77,8 @@ namespace ColorSkeletonStream_KinectMonoGame
 			Resolution.SetDesiredResolution(ScreenX, ScreenY);
 			Resolution.SetScreenResolution(1280, 720, true);
 
-			pixels = new Texture2D(graphics.GraphicsDevice,
-							ScreenX,
-							ScreenY, false, SurfaceFormat.Color);
-			pixelData_clear = new Color[ScreenX * ScreenY];
-			for (int i = 0; i < pixelData_clear.Length; ++i)
-				pixelData_clear[i] = Color.Black;
+			Tex = new KinectTexture2D(ScreenX, ScreenY);
+			Tex.Initialize(graphics.GraphicsDevice);
 
 			base.Initialize();
 		}
@@ -187,7 +175,7 @@ namespace ColorSkeletonStream_KinectMonoGame
 			// Calculate Proper Viewport according to Aspect Ratio
 			Resolution.ResetViewport();
 
-			pixels.SetData<Color>(pixelData_clear);
+			Tex.PrepareToRender();
 
 			// Calculate Proper Viewport according to Aspect Ratio
 			Resolution.ResetViewport();
@@ -196,7 +184,7 @@ namespace ColorSkeletonStream_KinectMonoGame
 			null, null, null, null,
 			Resolution.TransformationMatrix());
 
-			spriteBatch.Draw(pixels, new Vector2(0, 0), null, Color.White);
+			spriteBatch.Draw(Tex.Texture, new Vector2(0, 0), null, Color.White);
 
 			//TODO: draw skeleton
 
@@ -220,33 +208,7 @@ namespace ColorSkeletonStream_KinectMonoGame
 					// Copy the pixel data from the image to a temporary array
 					colorFrame.CopyPixelDataTo(this.colorPixels);
 
-					//get the width of the image
-					int imageWidth = colorFrame.Width;
-
-					//get the height of the image
-					int imageHeight = colorFrame.Height;
-
-					// Convert the depth to RGB
-					for (int pixelIndex = 0; pixelIndex < pixelData_clear.Length; pixelIndex++)
-					{
-						//get the pixel column
-						int x = pixelIndex % ScreenX;
-
-						//get the pixel row
-						int y = pixelIndex / ScreenX;
-
-						//convert the image x to cell x
-						int x2 = (x * imageWidth) / ScreenX;
-
-						//convert the image y to cell y
-						int y2 = (y * imageHeight) / ScreenY;
-
-						//get the index of the cell
-						int cellIndex = ((y2 * imageWidth) + x2) * 4;
-
-						//Create a new color
-						pixelData_clear[pixelIndex] = new Color(colorPixels[cellIndex + 2], colorPixels[cellIndex + 1], colorPixels[cellIndex + 0]);
-					}
+					Tex.CopyFromKinectColorStream(colorFrame, colorPixels);
 				}
 			}
 		}
