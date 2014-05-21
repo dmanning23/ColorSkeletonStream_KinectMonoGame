@@ -90,7 +90,7 @@ namespace ColorSkeletonStream_KinectMonoGame
 				int x = pixelIndex % Width;
 
 				//get the pixel row
-				int y = pixelIndex / Height;
+				int y = pixelIndex / Width;
 
 				//convert the image x to cell x
 				int x2 = (x * imageWidth) / Width;
@@ -146,7 +146,7 @@ namespace ColorSkeletonStream_KinectMonoGame
 				byte intensity = 0;
 				if (depth >= minDepth && depth <= maxDepth)
 				{
-					intensity = (byte)((depth * byte.MaxValue) / depthDelta);
+					intensity = (byte)(byte.MaxValue - ((depth * byte.MaxValue) / depthDelta));
 				}
 
 				//set the color

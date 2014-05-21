@@ -75,7 +75,7 @@ namespace ColorSkeletonStream_KinectMonoGame
 		protected override void Initialize()
 		{
 			Resolution.SetDesiredResolution(ScreenX, ScreenY);
-			Resolution.SetScreenResolution(1280, 720, true);
+			Resolution.SetScreenResolution(1280, 720, false);
 
 			Tex = new KinectTexture2D(ScreenX, ScreenY);
 			Tex.Initialize(graphics.GraphicsDevice);
