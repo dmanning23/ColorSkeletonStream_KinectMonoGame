@@ -43,11 +43,6 @@ namespace ColorSkeletonStream_KinectMonoGame
 		#region Skeleton Tracking
 
 		/// <summary>
-		/// The skeleton objects
-		/// </summary>
-		Skeleton[] skeletons;
-
-		/// <summary>
 		/// The skeleton object
 		/// </summary>
 		Skeleton skeleton;
@@ -235,29 +230,28 @@ namespace ColorSkeletonStream_KinectMonoGame
 
 		private void SensorSkeletonFrameReady(object sender, SkeletonFrameReadyEventArgs e)
 		{
+			Skeleton[] skeletons = null;
 			using (SkeletonFrame frame = e.OpenSkeletonFrame())
 			{
-				if (frame == null)
+				if (frame != null)
 				{
-					return;
+					skeletons = new Skeleton[frame.SkeletonArrayLength];
+					frame.CopySkeletonDataTo(skeletons);
 				}
-				skeletons = new Skeleton[frame.SkeletonArrayLength];
-				frame.CopySkeletonDataTo(skeletons);
-
-				if (skeletons == null) return;
-				skeleton = (from trackSkeleton in skeletons
-							where trackSkeleton.TrackingState == SkeletonTrackingState.Tracked
-							select trackSkeleton).FirstOrDefault();
-
-				if (skeleton == null)
-				{
-					return;
-				}
-
-				//update our custom skeleton object
-				mySkel.Update(skeleton);
-				mySkel.UpdateColorPosition(sensor);
 			}
+
+			if (skeletons == null) return;
+
+			skeleton = (from trackSkeleton in skeletons
+						where trackSkeleton.TrackingState == SkeletonTrackingState.Tracked
+						select trackSkeleton).FirstOrDefault();
+
+			if (skeleton == null)
+				return;
+
+			//update our custom skeleton object
+			mySkel.Update(skeleton);
+			mySkel.UpdateColorPosition(sensor);
 		}
 
 		#endregion //Methods
