@@ -1,10 +1,12 @@
 using Microsoft.Kinect;
+using BasicPrimitiveBuddy;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using ResolutionBuddy;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace ColorSkeletonStream_KinectMonoGame
 {
@@ -25,6 +27,10 @@ namespace ColorSkeletonStream_KinectMonoGame
 
 		KinectTexture2D Tex;
 
+		KinectSkeleton mySkel;
+
+		XNABasicPrimitive prim;
+
 		#endregion //MonoGame
 
 		#region Kinect
@@ -39,7 +45,12 @@ namespace ColorSkeletonStream_KinectMonoGame
 		/// <summary>
 		/// The skeleton objects
 		/// </summary>
-		Skeleton[] skeletons = new Skeleton[0];
+		Skeleton[] skeletons;
+
+		/// <summary>
+		/// The skeleton object
+		/// </summary>
+		Skeleton skeleton;
 
 		#endregion //Skeleton Tracking
 
@@ -75,7 +86,7 @@ namespace ColorSkeletonStream_KinectMonoGame
 		protected override void Initialize()
 		{
 			Resolution.SetDesiredResolution(ScreenX, ScreenY);
-			Resolution.SetScreenResolution(1280, 720, false);
+			Resolution.SetScreenResolution(1280, 720, true);
 
 			Tex = new KinectTexture2D(ScreenX, ScreenY);
 			Tex.Initialize(graphics.GraphicsDevice);
@@ -92,6 +103,8 @@ namespace ColorSkeletonStream_KinectMonoGame
 			// Create a new SpriteBatch, which can be used to draw textures.
 			spriteBatch = new SpriteBatch(GraphicsDevice);
 
+			prim = new XNABasicPrimitive(GraphicsDevice, spriteBatch);
+
 			// Look through all sensors and start the first connected one.
 			// This requires that a Kinect is connected at the time of app startup.
 			// To make your app robust against plug/unplug, 
@@ -107,16 +120,21 @@ namespace ColorSkeletonStream_KinectMonoGame
 
 			if (null != this.sensor)
 			{
+				mySkel = new KinectSkeleton(640, 480);
+
 				// Turn on the color stream to receive color frames
 				this.sensor.ColorStream.Enable(ColorImageFormat.RgbResolution640x480Fps30);
 
 				// Allocate space to put the color pixels we'll create
 				this.colorPixels = new byte[this.sensor.ColorStream.FramePixelDataLength];
+				
+				// Add an event handler to be called whenever there is new color frame data
+				this.sensor.ColorFrameReady += this.SensorColorFrameReady;
 
 				this.sensor.SkeletonStream.Enable();
 
 				// Add an event handler to be called whenever there is new frame data
-				this.sensor.AllFramesReady += this.SensorAllFramesReady;
+				this.sensor.SkeletonFrameReady += this.SensorSkeletonFrameReady;
 
 				// Start the sensor!
 				try
@@ -177,6 +195,8 @@ namespace ColorSkeletonStream_KinectMonoGame
 
 			Tex.PrepareToRender();
 
+			mySkel.UpdateTexPosition(Tex);
+
 			// Calculate Proper Viewport according to Aspect Ratio
 			Resolution.ResetViewport();
 			spriteBatch.Begin(SpriteSortMode.Immediate,
@@ -186,7 +206,7 @@ namespace ColorSkeletonStream_KinectMonoGame
 
 			spriteBatch.Draw(Tex.Texture, new Vector2(0, 0), null, Color.White);
 
-			//TODO: draw skeleton
+			mySkel.Render(prim);
 
 			spriteBatch.End();
 
@@ -198,7 +218,7 @@ namespace ColorSkeletonStream_KinectMonoGame
 		/// </summary>
 		/// <param name="sender">object sending the event</param>
 		/// <param name="e">event arguments</param>
-		private void SensorAllFramesReady(object sender, AllFramesReadyEventArgs e)
+		private void SensorColorFrameReady(object sender, ColorImageFrameReadyEventArgs e)
 		{
 			//render the color image
 			using (ColorImageFrame colorFrame = e.OpenColorImageFrame())
@@ -210,6 +230,33 @@ namespace ColorSkeletonStream_KinectMonoGame
 
 					Tex.CopyFromKinectColorStream(colorFrame, colorPixels);
 				}
+			}
+		}
+
+		private void SensorSkeletonFrameReady(object sender, SkeletonFrameReadyEventArgs e)
+		{
+			using (SkeletonFrame frame = e.OpenSkeletonFrame())
+			{
+				if (frame == null)
+				{
+					return;
+				}
+				skeletons = new Skeleton[frame.SkeletonArrayLength];
+				frame.CopySkeletonDataTo(skeletons);
+
+				if (skeletons == null) return;
+				skeleton = (from trackSkeleton in skeletons
+							where trackSkeleton.TrackingState == SkeletonTrackingState.Tracked
+							select trackSkeleton).FirstOrDefault();
+
+				if (skeleton == null)
+				{
+					return;
+				}
+
+				//update our custom skeleton object
+				mySkel.Update(skeleton);
+				mySkel.UpdateColorPosition(sensor);
 			}
 		}
 

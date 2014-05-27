@@ -84,25 +84,28 @@ namespace ColorSkeletonStream_KinectMonoGame
 			int imageHeight = colorFrame.Height;
 
 			// Convert the depth to RGB
+			int x, y, x2, y2, cellIndex = 0;
 			for (int pixelIndex = 0; pixelIndex < PixelData.Length; pixelIndex++)
 			{
 				//get the pixel column
-				int x = pixelIndex % Width;
+				x = pixelIndex % Width;
 
 				//get the pixel row
-				int y = pixelIndex / Width;
+				y = pixelIndex / Width;
 
 				//convert the image x to cell x
-				int x2 = (x * imageWidth) / Width;
+				x2 = (x * imageWidth) / Width;
 
 				//convert the image y to cell y
-				int y2 = (y * imageHeight) / Height;
+				y2 = (y * imageHeight) / Height;
 
 				//get the index of the cell
-				int cellIndex = ((y2 * imageWidth) + x2) * 4;
+				cellIndex = ((y2 * imageWidth) + x2) * 4;
 
 				//Create a new color
-				PixelData[pixelIndex] = new Color(colorPixels[cellIndex + 2], colorPixels[cellIndex + 1], colorPixels[cellIndex + 0]);
+				PixelData[pixelIndex].R = colorPixels[cellIndex + 2];
+				PixelData[pixelIndex].G = colorPixels[cellIndex + 1];
+				PixelData[pixelIndex].B = colorPixels[cellIndex + 0];
 			}
 		}
 
