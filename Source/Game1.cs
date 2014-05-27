@@ -22,8 +22,8 @@ namespace ColorSkeletonStream_KinectMonoGame
 		GraphicsDeviceManager graphics;
 		SpriteBatch spriteBatch;
 
-		private const int ScreenX = 1024;
-		private const int ScreenY = 768;
+		private const int ScreenX = 640;
+		private const int ScreenY = 480;
 
 		KinectTexture2D Tex;
 

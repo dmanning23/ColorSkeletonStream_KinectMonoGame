@@ -11,6 +11,8 @@ namespace ColorSkeletonStream_KinectMonoGame
 	{
 		#region Members
 
+		private object _lock = new object();
+
 		/// <summary>
 		/// the texture that will contain the kinect image
 		/// </summary>
@@ -57,10 +59,6 @@ namespace ColorSkeletonStream_KinectMonoGame
 
 			//create the color data
 			PixelData = new Color[Width * Height];
-			for (int i = 0; i < PixelData.Length; ++i)
-			{
-				PixelData[i] = Color.Black;
-			}
 		}
 
 		/// <summary>
@@ -68,7 +66,10 @@ namespace ColorSkeletonStream_KinectMonoGame
 		/// </summary>
 		public void PrepareToRender()
 		{
-			Texture.SetData<Color>(PixelData);
+			lock (_lock)
+			{
+				Texture.SetData<Color>(PixelData);
+			}
 		}
 
 		/// <summary>
@@ -83,9 +84,13 @@ namespace ColorSkeletonStream_KinectMonoGame
 			//get the height of the image
 			int imageHeight = colorFrame.Height;
 
-			// Convert the depth to RGB
+			//put these here so it generates less garbage
 			int x, y, x2, y2, cellIndex = 0;
-			for (int pixelIndex = 0; pixelIndex < PixelData.Length; pixelIndex++)
+			int length = PixelData.Length;
+
+			Color[] buffer = new Color[Width * Height];
+
+			for (int pixelIndex = 0; pixelIndex < length; pixelIndex++)
 			{
 				//get the pixel column
 				x = pixelIndex % Width;
@@ -103,9 +108,14 @@ namespace ColorSkeletonStream_KinectMonoGame
 				cellIndex = ((y2 * imageWidth) + x2) * 4;
 
 				//Create a new color
-				PixelData[pixelIndex].R = colorPixels[cellIndex + 2];
-				PixelData[pixelIndex].G = colorPixels[cellIndex + 1];
-				PixelData[pixelIndex].B = colorPixels[cellIndex + 0];
+				buffer[pixelIndex].R = colorPixels[cellIndex + 2];
+				buffer[pixelIndex].G = colorPixels[cellIndex + 1];
+				buffer[pixelIndex].B = colorPixels[cellIndex + 0];
+			}
+
+			lock (_lock)
+			{
+				PixelData = buffer;
 			}
 		}
 
