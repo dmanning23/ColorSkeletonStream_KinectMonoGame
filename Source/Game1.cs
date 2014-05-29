@@ -40,23 +40,18 @@ namespace ColorSkeletonStream_KinectMonoGame
 		/// </summary>
 		private KinectSensor sensor;
 
-		#region Skeleton Tracking
-
 		/// <summary>
 		/// The skeleton object
 		/// </summary>
 		Skeleton skeleton;
-
-		#endregion //Skeleton Tracking
-
-		#region Color Tracking
 
 		/// <summary>
 		/// Intermediate storage for the depth data converted to color
 		/// </summary>
 		private byte[] colorPixels;
 
-		#endregion //Color Tracking
+		ColorImageFormat colorFormat = ColorImageFormat.RgbResolution640x480Fps30;
+		DepthImageFormat depthFormat = DepthImageFormat.Resolution640x480Fps30;
 
 		#endregion //Kinect
 
@@ -118,18 +113,17 @@ namespace ColorSkeletonStream_KinectMonoGame
 				mySkel = new KinectSkeleton(640, 480);
 
 				// Turn on the color stream to receive color frames
-				this.sensor.ColorStream.Enable(ColorImageFormat.RgbResolution640x480Fps30);
+				this.sensor.ColorStream.Enable(colorFormat);
 
 				// Allocate space to put the color pixels we'll create
 				this.colorPixels = new byte[this.sensor.ColorStream.FramePixelDataLength];
 				
-				// Add an event handler to be called whenever there is new color frame data
-				this.sensor.ColorFrameReady += this.SensorColorFrameReady;
-
 				this.sensor.SkeletonStream.Enable();
 
-				// Add an event handler to be called whenever there is new frame data
-				this.sensor.SkeletonFrameReady += this.SensorSkeletonFrameReady;
+				// Add an event handlers to be called whenever there is new frame data
+				//this.sensor.SkeletonFrameReady += this.SensorSkeletonFrameReady;
+				//this.sensor.ColorFrameReady += this.SensorColorFrameReady;
+				this.sensor.AllFramesReady += this.AllFramesReady;
 
 				// Start the sensor!
 				try
@@ -208,6 +202,65 @@ namespace ColorSkeletonStream_KinectMonoGame
 			base.Draw(gameTime);
 		}
 
+		#region Event Handlers
+
+		/// <summary>
+		/// Event handler for Kinect sensor's DepthFrameReady event
+		/// </summary>
+		/// <param name="sender">object sending the event</param>
+		/// <param name="e">event arguments</param>
+		private void AllFramesReady(object sender, AllFramesReadyEventArgs e)
+		{
+			do
+			{
+				//get the dimensions of the image
+				int imageWidth, imageHeight = 0;
+				using (ColorImageFrame colorFrame = e.OpenColorImageFrame())
+				{
+					if (colorFrame == null)
+					{
+						break;
+					}
+					imageWidth = colorFrame.Width;
+					imageHeight = colorFrame.Height;
+					colorFrame.CopyPixelDataTo(this.colorPixels);
+				}
+
+				Tex.CopyFromKinectColorStream(imageWidth, imageHeight, colorPixels);
+			} while (false);
+
+			do
+			{
+				Skeleton[] skeletons = null;
+				using (SkeletonFrame frame = e.OpenSkeletonFrame())
+				{
+					if (frame != null)
+					{
+						skeletons = new Skeleton[frame.SkeletonArrayLength];
+						frame.CopySkeletonDataTo(skeletons);
+					}
+				}
+
+				if (skeletons == null)
+				{
+					break;
+				}
+
+				skeleton = (from trackSkeleton in skeletons
+							where trackSkeleton.TrackingState == SkeletonTrackingState.Tracked
+							select trackSkeleton).FirstOrDefault();
+
+				if (skeleton == null)
+				{
+					break;
+				}
+
+				//update our custom skeleton object
+				mySkel.Update(skeleton);
+				mySkel.UpdateColorPosition(sensor);
+			} while (false);
+		}
+
 		/// <summary>
 		/// Event handler for Kinect sensor's DepthFrameReady event
 		/// </summary>
@@ -215,44 +268,60 @@ namespace ColorSkeletonStream_KinectMonoGame
 		/// <param name="e">event arguments</param>
 		private void SensorColorFrameReady(object sender, ColorImageFrameReadyEventArgs e)
 		{
-			//render the color image
-			using (ColorImageFrame colorFrame = e.OpenColorImageFrame())
+			do
 			{
-				if (colorFrame != null)
+				//get the dimensions of the image
+				int imageWidth, imageHeight = 0;
+				using (ColorImageFrame colorFrame = e.OpenColorImageFrame())
 				{
-					// Copy the pixel data from the image to a temporary array
+					if (colorFrame == null)
+					{
+						break;
+					}
+					imageWidth = colorFrame.Width;
+					imageHeight = colorFrame.Height;
 					colorFrame.CopyPixelDataTo(this.colorPixels);
-
-					Tex.CopyFromKinectColorStream(colorFrame, colorPixels);
 				}
-			}
+
+				Tex.CopyFromKinectColorStream(imageWidth, imageHeight, colorPixels);
+			} while (false);
 		}
 
 		private void SensorSkeletonFrameReady(object sender, SkeletonFrameReadyEventArgs e)
 		{
-			Skeleton[] skeletons = null;
-			using (SkeletonFrame frame = e.OpenSkeletonFrame())
+			do
 			{
-				if (frame != null)
+				Skeleton[] skeletons = null;
+				using (SkeletonFrame frame = e.OpenSkeletonFrame())
 				{
-					skeletons = new Skeleton[frame.SkeletonArrayLength];
-					frame.CopySkeletonDataTo(skeletons);
+					if (frame != null)
+					{
+						skeletons = new Skeleton[frame.SkeletonArrayLength];
+						frame.CopySkeletonDataTo(skeletons);
+					}
 				}
-			}
 
-			if (skeletons == null) return;
+				if (skeletons == null)
+				{
+					break;
+				}
 
-			skeleton = (from trackSkeleton in skeletons
-						where trackSkeleton.TrackingState == SkeletonTrackingState.Tracked
-						select trackSkeleton).FirstOrDefault();
+				skeleton = (from trackSkeleton in skeletons
+							where trackSkeleton.TrackingState == SkeletonTrackingState.Tracked
+							select trackSkeleton).FirstOrDefault();
 
-			if (skeleton == null)
-				return;
+				if (skeleton == null)
+				{
+					break;
+				}
 
-			//update our custom skeleton object
-			mySkel.Update(skeleton);
-			mySkel.UpdateColorPosition(sensor);
+				//update our custom skeleton object
+				mySkel.Update(skeleton);
+				mySkel.UpdateColorPosition(sensor);
+			} while (false);
 		}
+
+		#endregion //Event Handlers
 
 		#endregion //Methods
 	}

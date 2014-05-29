@@ -1,4 +1,9 @@
-﻿using Microsoft.Kinect;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Microsoft.Kinect;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -7,7 +12,7 @@ namespace ColorSkeletonStream_KinectMonoGame
 	/// <summary>
 	/// Helper class for mapping a kinect color stream to a texture
 	/// </summary>
-	class KinectTexture2D
+	class KinectDepthTexture
 	{
 		#region Members
 
@@ -42,7 +47,7 @@ namespace ColorSkeletonStream_KinectMonoGame
 		/// </summary>
 		/// <param name="width"></param>
 		/// <param name="height"></param>
-		public KinectTexture2D(int width, int height)
+		public KinectDepthTexture(int width, int height)
 		{
 			Width = width;
 			Height = height;
@@ -72,48 +77,7 @@ namespace ColorSkeletonStream_KinectMonoGame
 			}
 		}
 
-		/// <summary>
-		/// Copy the data from a color image frame into this dude's color buffer
-		/// </summary>
-		/// <param name="colorFrame"></param>
-		public void CopyFromKinectColorStream(int imageWidth, int imageHeight, byte[] colorPixels)
-		{
-			//put these here so it generates less garbage
-			int x, y, x2, y2, cellIndex = 0;
-			int length = PixelData.Length;
-
-			Color[] buffer = new Color[Width * Height];
-
-			for (int pixelIndex = 0; pixelIndex < length; pixelIndex++)
-			{
-				//get the pixel column
-				x = pixelIndex % Width;
-
-				//get the pixel row
-				y = pixelIndex / Width;
-
-				//convert the image x to cell x
-				x2 = (x * imageWidth) / Width;
-
-				//convert the image y to cell y
-				y2 = (y * imageHeight) / Height;
-
-				//get the index of the cell
-				cellIndex = ((y2 * imageWidth) + x2) * 4;
-
-				//Create a new color
-				buffer[pixelIndex].R = colorPixels[cellIndex + 2];
-				buffer[pixelIndex].G = colorPixels[cellIndex + 1];
-				buffer[pixelIndex].B = colorPixels[cellIndex + 0];
-			}
-
-			lock (_lock)
-			{
-				PixelData = buffer;
-			}
-		}
-
-		public void CopyFromKinectDepthStream(DepthImageFrame depthFrame, DepthImagePixel[] depthPixels, KinectSensor sensor)
+		public void CopyFromKinectDepthStream(DepthImageFrame depthFrame, DepthImagePixel[] depthPixels, KinectSensor sensor, ColorImageFormat colorFormat)
 		{
 			// Get the min and max reliable depth for the current frame
 			int minDepth = depthFrame.MinDepth;
@@ -128,9 +92,12 @@ namespace ColorSkeletonStream_KinectMonoGame
 			//get the height of the image
 			int imageHeight = depthFrame.Height;
 
+			//setup temp variables
 			int x, y, x2, y2, imageIndex = 0;
 			short depth = 0;
 			byte intensity = 0;
+			DepthImagePixel depthPixel;
+			ColorImagePoint colorPoint;
 
 			// Convert the depth to RGB
 			for (int pixelIndex = 0; pixelIndex < PixelData.Length; pixelIndex++)
@@ -149,9 +116,21 @@ namespace ColorSkeletonStream_KinectMonoGame
 
 				//get the index of the cell
 				imageIndex = (y2 * imageWidth) + x2;
+				depthPixel = depthPixels[imageIndex];
+				DepthImagePoint depthPoint = new DepthImagePoint()
+				{
+					X = x2,
+					Y = y2,
+					Depth = depthPixel.Depth,
+					//PlayerIndex = depthPixel.PlayerIndex
+				};
 
-				// Get the depth for this pixel
-				depth = depthPixels[imageIndex].Depth;
+				  //convert to color point
+
+				  //convert back to depth point
+
+				  // Get the depth for this pixel
+				  depth = depthPixels[imageIndex].Depth;
 
 				//convert to a range that will fit in one byte
 				intensity = 0;

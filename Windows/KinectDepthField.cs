@@ -1,4 +1,9 @@
-﻿using Microsoft.Kinect;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Microsoft.Kinect;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -7,7 +12,7 @@ namespace ColorSkeletonStream_KinectMonoGame
 	/// <summary>
 	/// Helper class for mapping a kinect color stream to a texture
 	/// </summary>
-	class KinectTexture2D
+	class KinectDepthField
 	{
 		#region Members
 
@@ -42,7 +47,7 @@ namespace ColorSkeletonStream_KinectMonoGame
 		/// </summary>
 		/// <param name="width"></param>
 		/// <param name="height"></param>
-		public KinectTexture2D(int width, int height)
+		public KinectDepthField(int width, int height)
 		{
 			Width = width;
 			Height = height;
@@ -76,8 +81,14 @@ namespace ColorSkeletonStream_KinectMonoGame
 		/// Copy the data from a color image frame into this dude's color buffer
 		/// </summary>
 		/// <param name="colorFrame"></param>
-		public void CopyFromKinectColorStream(int imageWidth, int imageHeight, byte[] colorPixels)
+		public void CopyFromKinectColorStream(ColorImageFrame colorFrame, byte[] colorPixels)
 		{
+			//get the width of the image
+			int imageWidth = colorFrame.Width;
+
+			//get the height of the image
+			int imageHeight = colorFrame.Height;
+
 			//put these here so it generates less garbage
 			int x, y, x2, y2, cellIndex = 0;
 			int length = PixelData.Length;

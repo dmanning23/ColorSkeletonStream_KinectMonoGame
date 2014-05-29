@@ -43,9 +43,17 @@
       <Link>Game1.cs</Link>
     </Compile>
     <Compile Include="KinectBone.cs" />
+    <Compile Include="KinectDepthField.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="KinectDepthTexture.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="KinectJoint.cs" />
     <Compile Include="KinectSkeleton.cs" />
-    <Compile Include="KinectTexture2D.cs" />
+    <Compile Include="KinectTexture2D.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
