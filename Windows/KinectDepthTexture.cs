@@ -125,12 +125,12 @@ namespace ColorSkeletonStream_KinectMonoGame
 					//PlayerIndex = depthPixel.PlayerIndex
 				};
 
-				  //convert to color point
+				//TODO: convert to color point
 
-				  //convert back to depth point
+				//TODO: convert back to depth point
 
-				  // Get the depth for this pixel
-				  depth = depthPixels[imageIndex].Depth;
+				// Get the depth for this pixel
+				depth = depthPixels[imageIndex].Depth;
 
 				//convert to a range that will fit in one byte
 				intensity = 0;

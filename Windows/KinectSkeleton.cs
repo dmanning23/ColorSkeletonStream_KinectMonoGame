@@ -67,11 +67,19 @@ namespace ColorSkeletonStream_KinectMonoGame
 			}
 		}
 
-		public void UpdateColorPosition(KinectSensor sensor)
+		public void UpdateColorPosition(KinectSensor sensor, ColorImageFormat colorFormat)
 		{
 			for (int i = 0; i < Joints.Count; i++)
 			{
-				Joints[i].UpdateColorPosition(sensor);
+				Joints[i].UpdateColorPosition(sensor, colorFormat);
+			}
+		}
+
+		public void UpdateDepthPosition(KinectSensor sensor, DepthImageFormat depthFormat)
+		{
+			for (int i = 0; i < Joints.Count; i++)
+			{
+				Joints[i].UpdateDepthPosition(sensor, depthFormat);
 			}
 		}
 

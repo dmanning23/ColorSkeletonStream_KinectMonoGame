@@ -80,8 +80,8 @@ namespace ColorSkeletonStream_KinectMonoGame
 		{
 			//put these here so it generates less garbage
 			int x, y, x2, y2, cellIndex = 0;
+			
 			int length = PixelData.Length;
-
 			Color[] buffer = new Color[Width * Height];
 
 			for (int pixelIndex = 0; pixelIndex < length; pixelIndex++)
@@ -113,33 +113,34 @@ namespace ColorSkeletonStream_KinectMonoGame
 			}
 		}
 
-		public void CopyFromKinectDepthStream(DepthImageFrame depthFrame, DepthImagePixel[] depthPixels, KinectSensor sensor)
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="minDepth">the min reliable depth for the current frame</param>
+		/// <param name="maxDepth">the max reliable depth for the current frame</param>
+		/// <param name="imageWidth"></param>
+		/// <param name="imageHeight"></param>
+		/// <param name="depthPixels"></param>
+		public void CopyFromKinectDepthStream(int minDepth, int maxDepth, int imageWidth, int imageHeight, DepthImagePixel[] depthPixels)
 		{
-			// Get the min and max reliable depth for the current frame
-			int minDepth = depthFrame.MinDepth;
-			int maxDepth = depthFrame.MaxDepth;
-
 			//Get the depth delta
 			int depthDelta = maxDepth - minDepth;
-
-			//get the width of the image
-			int imageWidth = depthFrame.Width;
-
-			//get the height of the image
-			int imageHeight = depthFrame.Height;
 
 			int x, y, x2, y2, imageIndex = 0;
 			short depth = 0;
 			byte intensity = 0;
 
+			int length = PixelData.Length;
+			Color[] buffer = new Color[Width * Height];
+
 			// Convert the depth to RGB
-			for (int pixelIndex = 0; pixelIndex < PixelData.Length; pixelIndex++)
+			for (int pixelIndex = 0; pixelIndex < length; pixelIndex++)
 			{
 				//get the pixel column
 				x = pixelIndex % Width;
 
 				//get the pixel row
-				y = pixelIndex / Height;
+				y = pixelIndex / Width;
 
 				//convert the image x to cell x
 				x2 = (x * imageWidth) / Width;
@@ -161,7 +162,12 @@ namespace ColorSkeletonStream_KinectMonoGame
 				}
 
 				//set the color
-				PixelData[pixelIndex] = new Color(intensity, intensity, intensity);
+				buffer[pixelIndex] = new Color(intensity, intensity, intensity);
+			}
+
+			lock (_lock)
+			{
+				PixelData = buffer;
 			}
 		}
 

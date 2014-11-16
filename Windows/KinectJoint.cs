@@ -17,6 +17,8 @@ namespace ColorSkeletonStream_KinectMonoGame
 
 		private ColorImagePoint _colorPosition;
 
+		private DepthImagePoint _depthPosition;
+
 		private Vector2 _texPosition;
 
 		private object _lock = new object();
@@ -52,6 +54,21 @@ namespace ColorSkeletonStream_KinectMonoGame
 			set
 			{
 				_colorPosition = value;
+			}
+		}
+
+		/// <summary>
+		/// the joints location in the depth space
+		/// </summary>
+		public DepthImagePoint DepthPosition
+		{
+			get
+			{
+				return _depthPosition;
+			}
+			set
+			{
+				_depthPosition = value;
 			}
 		}
 
@@ -118,14 +135,26 @@ namespace ColorSkeletonStream_KinectMonoGame
 			}
 		}
 
-		public void UpdateColorPosition(KinectSensor sensor)
+		public void UpdateColorPosition(KinectSensor sensor, ColorImageFormat colorFormat)
 		{
 			lock (_lock)
 			{
 				if (IsValidPosition())
 				{
 					//update the skel pos to the color stream 
-					_colorPosition = sensor.CoordinateMapper.MapSkeletonPointToColorPoint(SkeletonPosition, ColorImageFormat.RgbResolution640x480Fps30);
+					ColorPosition = sensor.CoordinateMapper.MapSkeletonPointToColorPoint(SkeletonPosition, colorFormat);
+				}
+			}
+		}
+
+		public void UpdateDepthPosition(KinectSensor sensor, DepthImageFormat depthFormat)
+		{
+			lock (_lock)
+			{
+				if (IsValidPosition())
+				{
+					//update the skel pos to the depth stream 
+					DepthPosition = sensor.CoordinateMapper.MapSkeletonPointToDepthPoint(SkeletonPosition, depthFormat);
 				}
 			}
 		}
@@ -136,9 +165,13 @@ namespace ColorSkeletonStream_KinectMonoGame
 			{
 				if (IsValidPosition())
 				{
+					////take the color pos and translate to texture position
+					//_texPosition.X = (ColorPosition.X * texture.Width) / ColorWidth;
+					//_texPosition.Y = (ColorPosition.Y * texture.Height) / ColorHeight;
+
 					//take the color pos and translate to texture position
-					_texPosition.X = (ColorPosition.X * texture.Width) / ColorWidth;
-					_texPosition.Y = (ColorPosition.Y * texture.Height) / ColorHeight;
+					_texPosition.X = (DepthPosition.X * texture.Width) / ColorWidth;
+					_texPosition.Y = (DepthPosition.Y * texture.Height) / ColorHeight;
 				}
 			}
 		}
