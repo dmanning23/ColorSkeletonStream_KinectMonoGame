@@ -1,11 +1,5 @@
-﻿using System;
-using Microsoft.Xna.Framework;
-using BasicPrimitiveBuddy;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Kinect;
+﻿using Microsoft.Xna.Framework;
+using PrimitiveBuddy;
 
 namespace ColorSkeletonStream_KinectMonoGame
 {
@@ -31,7 +25,7 @@ namespace ColorSkeletonStream_KinectMonoGame
 		/// draw the bone
 		/// </summary>
 		/// <param name="prim"></param>
-		public void Render(IBasicPrimitive prim)
+		public void Render(IPrimitive prim)
 		{
 			if (First.IsValidPosition() && Second.IsValidPosition())
 			{

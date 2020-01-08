@@ -1,11 +1,6 @@
-﻿using System;
-using BasicPrimitiveBuddy;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Microsoft.Kinect;
 using Microsoft.Xna.Framework;
-using Microsoft.Kinect;
+using PrimitiveBuddy;
 
 namespace ColorSkeletonStream_KinectMonoGame
 {
@@ -176,7 +171,7 @@ namespace ColorSkeletonStream_KinectMonoGame
 			}
 		}
 
-		public void Render(IBasicPrimitive prim)
+		public void Render(IPrimitive prim)
 		{
 			lock (_lock)
 			{

@@ -1,10 +1,9 @@
 using Microsoft.Kinect;
-using BasicPrimitiveBuddy;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using PrimitiveBuddy;
 using ResolutionBuddy;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -30,7 +29,7 @@ namespace ColorSkeletonStream_KinectMonoGame
 
 		KinectSkeleton mySkel;
 
-		XNABasicPrimitive prim;
+		IPrimitive prim;
 
 		#endregion //MonoGame
 
@@ -59,6 +58,8 @@ namespace ColorSkeletonStream_KinectMonoGame
 		ColorImageFormat colorFormat = ColorImageFormat.RgbResolution640x480Fps30;
 		DepthImageFormat depthFormat = DepthImageFormat.Resolution80x60Fps30;
 
+		IResolution _resolution;
+
 		#endregion //Kinect
 
 		#endregion //Members
@@ -70,7 +71,7 @@ namespace ColorSkeletonStream_KinectMonoGame
 			graphics = new GraphicsDeviceManager(this);
 			Content.RootDirectory = "Content";
 
-			Resolution.Init(ref graphics);
+			_resolution = new ResolutionComponent(this, graphics, new Point(1280, 720), new Point(1280, 720), false, false);
 		}
 
 		/// <summary>
@@ -81,9 +82,6 @@ namespace ColorSkeletonStream_KinectMonoGame
 		/// </summary>
 		protected override void Initialize()
 		{
-			Resolution.SetDesiredResolution(ScreenX, ScreenY);
-			Resolution.SetScreenResolution(1280, 720, false);
-
 			Tex = new KinectTexture2D(ScreenX, ScreenY);
 			Tex.Initialize(graphics.GraphicsDevice);
 
@@ -99,7 +97,7 @@ namespace ColorSkeletonStream_KinectMonoGame
 			// Create a new SpriteBatch, which can be used to draw textures.
 			spriteBatch = new SpriteBatch(GraphicsDevice);
 
-			prim = new XNABasicPrimitive(GraphicsDevice, spriteBatch);
+			prim = new Primitive(GraphicsDevice, spriteBatch);
 
 			// Look through all sensors and start the first connected one.
 			// This requires that a Kinect is connected at the time of app startup.
@@ -129,7 +127,7 @@ namespace ColorSkeletonStream_KinectMonoGame
 
 				// Allocate space to put the depth pixels we'll receive
 				this.depthPixels = new DepthImagePixel[this.sensor.DepthStream.FramePixelDataLength];
-				
+
 				this.sensor.SkeletonStream.Enable();
 
 				// Add an event handlers to be called whenever there is new frame data
@@ -197,7 +195,10 @@ namespace ColorSkeletonStream_KinectMonoGame
 
 			Tex.PrepareToRender();
 
-			mySkel.UpdateTexPosition(Tex);
+			if (null != mySkel)
+			{
+				mySkel.UpdateTexPosition(Tex);
+			}
 
 			// Calculate Proper Viewport according to Aspect Ratio
 			Resolution.ResetViewport();
@@ -208,7 +209,10 @@ namespace ColorSkeletonStream_KinectMonoGame
 
 			spriteBatch.Draw(Tex.Texture, new Vector2(0, 0), null, Color.White);
 
-			mySkel.Render(prim);
+			if (null != mySkel)
+			{
+				mySkel.Render(prim);
+			}
 
 			spriteBatch.End();
 
@@ -269,8 +273,11 @@ namespace ColorSkeletonStream_KinectMonoGame
 				}
 
 				//update our custom skeleton object
-				mySkel.Update(skeleton);
-				mySkel.UpdateColorPosition(sensor, colorFormat);
+				if (null != mySkel)
+				{
+					mySkel.Update(skeleton);
+					mySkel.UpdateColorPosition(sensor, colorFormat);
+				}
 			} while (false);
 		}
 
@@ -362,9 +369,12 @@ namespace ColorSkeletonStream_KinectMonoGame
 					break;
 				}
 
-				//update our custom skeleton object
-				mySkel.Update(skeleton);
-				mySkel.UpdateColorPosition(sensor, colorFormat);
+				if (null != mySkel)
+				{
+					//update our custom skeleton object
+					mySkel.Update(skeleton);
+					mySkel.UpdateColorPosition(sensor, colorFormat);
+				}
 			} while (false);
 		}
 
@@ -396,15 +406,18 @@ namespace ColorSkeletonStream_KinectMonoGame
 					break;
 				}
 
-				//update our custom skeleton object
-				Task.Factory.StartNew(() =>
+				if (null != mySkel)
 				{
-					mySkel.Update(skeleton);
-					mySkel.UpdateDepthPosition(sensor, depthFormat);
-				});
+					//update our custom skeleton object
+					Task.Factory.StartNew(() =>
+					{
+						mySkel.Update(skeleton);
+						mySkel.UpdateDepthPosition(sensor, depthFormat);
+					});
+				}
 			} while (false);
 		}
-		
+
 		#endregion //Event Handlers
 
 		#endregion //Methods

@@ -1,11 +1,7 @@
-﻿using System;
-using Microsoft.Kinect;
-using BasicPrimitiveBuddy;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Kinect;
+using PrimitiveBuddy;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ColorSkeletonStream_KinectMonoGame
 {
@@ -91,7 +87,7 @@ namespace ColorSkeletonStream_KinectMonoGame
 			}
 		}
 
-		public void Render(IBasicPrimitive prim)
+		public void Render(IPrimitive prim)
 		{
 			for (int i = 0; i < Bones.Count; i++)
 			{

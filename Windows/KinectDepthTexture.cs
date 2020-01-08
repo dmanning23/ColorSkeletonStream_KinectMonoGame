@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Kinect;
+﻿using Microsoft.Kinect;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -97,7 +92,7 @@ namespace ColorSkeletonStream_KinectMonoGame
 			short depth = 0;
 			byte intensity = 0;
 			DepthImagePixel depthPixel;
-			ColorImagePoint colorPoint;
+			//ColorImagePoint colorPoint;
 
 			// Convert the depth to RGB
 			for (int pixelIndex = 0; pixelIndex < PixelData.Length; pixelIndex++)
